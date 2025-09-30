@@ -1,10 +1,12 @@
 ﻿using FlowSynx.PluginCore;
 using FlowSynx.Plugins.Compression.Zip.Models;
-using System.IO.Compression;
+using SharpCompress.Archives;
+using SharpCompress.Archives.Zip;
+using SharpCompress.Readers;
 
 namespace FlowSynx.Plugins.Compression.Zip.Services;
 
-internal sealed class DecompressOperationHandler : IZipOperationHandler
+internal sealed class DecompressOperationHandler : IZipOperationHandler<IReadOnlyList<PluginContext>>, IZipOperationHandlerBase
 {
     private readonly IGuidProvider _guidProvider;
 
@@ -30,39 +32,32 @@ internal sealed class DecompressOperationHandler : IZipOperationHandler
             throw new InvalidDataException("RawData must contain a valid ZIP archive.");
 
         var results = new List<PluginContext>();
-
         using var zipStream = new MemoryStream(input.RawData, writable: false);
-        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read, leaveOpen: false);
+        using var archive = ZipArchive.Open(zipStream);
 
         foreach (var entry in archive.Entries)
         {
             ct.ThrowIfCancellationRequested();
-            if (string.IsNullOrEmpty(entry.Name))
-                continue; // skip directories
-
+            if (entry.IsDirectory) continue;
             results.Add(CreateContextFromEntry(entry));
         }
 
         return Task.FromResult<IReadOnlyList<PluginContext>>(results);
     }
 
-    private PluginContext CreateContextFromEntry(ZipArchiveEntry entry)
+    private PluginContext CreateContextFromEntry(IArchiveEntry entry)
     {
-        var ctx = new PluginContext(entry.FullName, "Data")
+        var ctx = new PluginContext(entry.Key, "Data")
         {
-            Format = Path.GetExtension(entry.Name).TrimStart('.'),
+            Format = Path.GetExtension(entry.Key).TrimStart('.')
         };
 
-        using var entryStream = entry.Open();
-
         using var ms = new MemoryStream();
-        entryStream.CopyTo(ms);
+        entry.OpenEntryStream().CopyTo(ms);
         ctx.RawData = ms.ToArray();
-
-        ctx.Metadata["FileName"] = entry.Name;
-        ctx.Metadata["CompressedSize"] = entry.CompressedLength;
-        ctx.Metadata["UncompressedSize"] = entry.Length;
-
+        ctx.Metadata["FileName"] = Path.GetFileName(entry.Key);
+        ctx.Metadata["CompressedSize"] = entry.CompressedSize;
+        ctx.Metadata["UncompressedSize"] = entry.Size;
         return ctx;
     }
 }

@@ -1,11 +1,12 @@
 ﻿using FlowSynx.PluginCore;
 using FlowSynx.Plugins.Compression.Zip.Models;
-using System.IO.Compression;
+using SharpCompress.Common;
+using SharpCompress.Writers;
 using System.Text;
 
 namespace FlowSynx.Plugins.Compression.Zip.Services;
 
-internal class CompressOperationHandler : IZipOperationHandler
+internal class CompressOperationHandler : IZipOperationHandler<PluginContext>, IZipOperationHandlerBase
 {
     private readonly IGuidProvider _guidProvider;
 
@@ -14,7 +15,7 @@ internal class CompressOperationHandler : IZipOperationHandler
         _guidProvider = guidProvider ?? throw new ArgumentNullException(nameof(guidProvider));
     }
 
-    public Task<IReadOnlyList<PluginContext>> HandleAsync(
+    public Task<PluginContext> HandleAsync(
         IEnumerable<PluginContext> inputs,
         InputParameter parameter,
         CancellationToken ct)
@@ -22,44 +23,37 @@ internal class CompressOperationHandler : IZipOperationHandler
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(inputs);
 
-        // Create the zip directly into a byte array
         byte[] zipBytes = CreateZipBytes(inputs, ct);
 
-        string filename = string.IsNullOrEmpty(parameter.FileName)
-            ? _guidProvider.NewGuid().ToString()
-            : parameter.FileName;
+        string filename = $"{_guidProvider.NewGuid().ToString()}.zip";
 
-        var outCtx = new PluginContext($"{filename}.zip", "Data")
+        var outCtx = new PluginContext(filename, "Data")
         {
             Format = "Zip",
             RawData = zipBytes
         };
 
-        return Task.FromResult<IReadOnlyList<PluginContext>>(new[] { outCtx });
+        return Task.FromResult(outCtx);
     }
 
     private static byte[] CreateZipBytes(IEnumerable<PluginContext> inputs, CancellationToken ct)
     {
         using var ms = new MemoryStream();
-        using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        using (var zipWriter = WriterFactory.Open(ms, ArchiveType.Zip, new WriterOptions(CompressionType.Deflate)))
         {
             foreach (var ctx in inputs)
             {
                 ct.ThrowIfCancellationRequested();
-
                 if (ctx.RawData is { Length: > 0 })
                 {
-                    var entry = archive.CreateEntry(ctx.Id, CompressionLevel.Optimal);
-                    using var entryStream = entry.Open();
-                    entryStream.Write(ctx.RawData, 0, ctx.RawData.Length);
+                    using var entryStream = new MemoryStream(ctx.RawData);
+                    zipWriter.Write(ctx.Id, entryStream, null);
                 }
                 else if (!string.IsNullOrEmpty(ctx.Content))
                 {
-                    var entry = archive.CreateEntry(ctx.Id, CompressionLevel.Optimal);
-                    using var entryStream = entry.Open();
-                    using var writer = new StreamWriter(entryStream, Encoding.UTF8, leaveOpen: true);
-                    writer.Write(ctx.Content);
-                    writer.Flush(); // <-- important
+                    var contentBytes = Encoding.UTF8.GetBytes(ctx.Content);
+                    using var entryStream = new MemoryStream(contentBytes);
+                    zipWriter.Write(ctx.Id, entryStream, null);
                 }
                 else if (ctx.StructuredData is { Count: > 0 })
                 {
@@ -67,7 +61,6 @@ internal class CompressOperationHandler : IZipOperationHandler
                 }
             }
         }
-
-        return ms.ToArray(); // MemoryStream is already fully populated
+        return ms.ToArray();
     }
 }

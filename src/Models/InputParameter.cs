@@ -4,5 +4,4 @@ internal class InputParameter
 {
     public string Operation { get; set; } = string.Empty;
     public object? Data { get; set; }
-    public string? FileName { get; set; } = string.Empty;
 }

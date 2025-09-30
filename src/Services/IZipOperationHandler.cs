@@ -3,10 +3,10 @@ using FlowSynx.Plugins.Compression.Zip.Models;
 
 namespace FlowSynx.Plugins.Compression.Zip.Services;
 
-internal interface IZipOperationHandler
+internal interface IZipOperationHandler<TResult>
 {
-    Task<IReadOnlyList<PluginContext>> HandleAsync(
-        IEnumerable<PluginContext> inputs, 
-        InputParameter parameter, 
+    Task<TResult> HandleAsync(
+        IEnumerable<PluginContext> inputs,
+        InputParameter parameter,
         CancellationToken ct);
 }

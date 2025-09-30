@@ -1,4 +1,4 @@
-# Zip Compression Plugin
+## Zip Compression Plugin
 
 The **Zip Compression Plugin** is a built-in, plug-and-play integration for the FlowSynx automation engine. It enables compressing and decompressing files and folders using the ZIP format within workflows, with no custom coding required.
 
@@ -33,42 +33,13 @@ The plugin accepts the following parameters:
   - A string (raw or base64-encoded data)
   - A `PluginContext` object
   - An array of `PluginContext` objects
-- `FileName` (string): **Optional.** The name of the compressed file to be created or the name for extracted content.
 
 ### Example input (string data)
 
 ```json
 {
   "Operation": "compress",
-  "Data": "<base64 or raw file data>",
-  "FileName": "archive.zip"
-}
-```
-
-### Example input (PluginContext)
-
-```json
-{
-  "Operation": "compress",
-  "Data": {
-    "Id": "123",
-    "Type": "Data",
-    "RawData": "<base64 file data>"
-  },
-  "FileName": "archive.zip"
-}
-```
-
-### Example input (array of PluginContext)
-
-```json
-{
-  "Operation": "compress",
-  "Data": [
-    { "Id": "123", "Type": "Data", "RawData": "<base64 file data>" },
-    { "Id": "124", "Type": "Data", "RawData": "<base64 file data>" }
-  ],
-  "FileName": "archive.zip"
+  "Data": "<base64 or raw file data>"
 }
 ```
 
@@ -83,17 +54,7 @@ The plugin accepts the following parameters:
 ```json
 {
   "Operation": "compress",
-  "Data": "<base64 or raw file data>",
-  "FileName": "archive.zip"
-}
-```
-
-**Output:**
-
-```json
-{
-  "success": true,
-  "archiveName": "archive.zip"
+  "Data": "<base64 or raw file data>"
 }
 ```
 
@@ -106,17 +67,7 @@ The plugin accepts the following parameters:
 ```json
 {
   "Operation": "decompress",
-  "Data": "<zip archive data>",
-  "FileName": "extracted"
-}
-```
-
-**Output:**
-
-```json
-{
-  "success": true,
-  "extractedName": "extracted"
+  "Data": "<zip archive data>"
 }
 ```
 
@@ -126,7 +77,7 @@ The plugin accepts the following parameters:
 
 1. Add the Zip Compression plugin to your FlowSynx workflow.
 2. Set `Operation` to one of: `compress` or `decompress`.
-3. Provide values for `Data` (as string, PluginContext, or array of PluginContext) and optionally `FileName`.
+3. Provide values for `Data` (as string, PluginContext, or array of PluginContext).
 4. Use the plugin output downstream in your workflow for file management or data transfer.
 
 ---
@@ -134,7 +85,6 @@ The plugin accepts the following parameters:
 ## Debugging Tips
 
 - Ensure `Data` contains valid file, folder, or archive data in one of the supported formats.
-- Use `FileName` to specify the output or extracted file name if needed.
 - For decompress operations, verify the ZIP archive data is not corrupted.
 
 ---
