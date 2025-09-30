@@ -1,5 +1,4 @@
 ## Zip Compression Plugin
-
 The **Zip Compression Plugin** is a built-in, plug-and-play integration for the FlowSynx automation engine. It enables compressing and decompressing files and folders using the ZIP format within workflows, with no custom coding required.
 
 This plugin is automatically installed by the FlowSynx engine when selected in the workflow builder. It is not intended for standalone developer usage outside the FlowSynx platform.
@@ -7,7 +6,6 @@ This plugin is automatically installed by the FlowSynx engine when selected in t
 ---
 
 ## Purpose
-
 The Zip Compression Plugin allows FlowSynx users to:
 
 - Compress files or folders into a ZIP archive.
@@ -18,14 +16,12 @@ It integrates seamlessly into FlowSynx no-code/low-code workflows for file manag
 ---
 
 ## Supported Operations
-
 - **compress**: Compresses provided file or folder data into a ZIP archive.
 - **decompress**: Extracts files and folders from provided ZIP archive data.
 
 ---
 
 ## Input Parameters
-
 The plugin accepts the following parameters:
 
 - `Operation` (string): **Required.** The type of operation to perform. Supported values are `compress` and `decompress`.
@@ -35,7 +31,6 @@ The plugin accepts the following parameters:
   - An array of `PluginContext` objects
 
 ### Example input (string data)
-
 ```json
 {
   "Operation": "compress",
@@ -46,11 +41,8 @@ The plugin accepts the following parameters:
 ---
 
 ## Operation Examples
-
 ### compress Operation
-
 **Input Parameters:**
-
 ```json
 {
   "Operation": "compress",
@@ -61,9 +53,7 @@ The plugin accepts the following parameters:
 ---
 
 ### decompress Operation
-
 **Input Parameters:**
-
 ```json
 {
   "Operation": "decompress",
@@ -74,7 +64,6 @@ The plugin accepts the following parameters:
 ---
 
 ## Example Use Case in FlowSynx
-
 1. Add the Zip Compression plugin to your FlowSynx workflow.
 2. Set `Operation` to one of: `compress` or `decompress`.
 3. Provide values for `Data` (as string, PluginContext, or array of PluginContext).
@@ -83,14 +72,12 @@ The plugin accepts the following parameters:
 ---
 
 ## Debugging Tips
-
 - Ensure `Data` contains valid file, folder, or archive data in one of the supported formats.
 - For decompress operations, verify the ZIP archive data is not corrupted.
 
 ---
 
 ## Security Notes
-
 - No data is persisted unless explicitly configured.
 - All operations run in a secure sandbox within FlowSynx.
 - Only authorized platform users can view or modify configurations.
@@ -98,5 +85,4 @@ The plugin accepts the following parameters:
 ---
 
 ## License
-
 © FlowSynx. All rights reserved.
